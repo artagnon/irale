@@ -14,4 +14,4 @@ class PlaceToken(models.Model):
     place = models.ForeignKey('Place')
 
     key = models.CharField(max_length=255)
-    value = models.CharField(max_length=255)
+    value = models.CharField(max_length=1024)
