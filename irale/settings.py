@@ -1,5 +1,7 @@
 # Django settings for irale project.
 
+import localsettings
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -13,7 +15,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'irale',
-        'USER': 'artagnon',
+        'USER': localsettings.user,
         'PASSWORD': '',
         'HOST': '',
         'PORT': '',
