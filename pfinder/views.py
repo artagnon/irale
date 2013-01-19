@@ -4,7 +4,9 @@ import json
 
 def lookupId(request, pid):
     this_place = Place.objects.get(id = pid)
-    dispatch = {'name' : this_place.name}
+    dispatch = {'name': this_place.name,
+                'tokens': list(PlaceToken.objects.filter(
+                place_id = pid).values('key', 'value'))}
     return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
 def lookupKey(request, key):
