@@ -1,6 +1,5 @@
 from pfinder.models import Place, PlaceToken
-from django.contrib import admin
-from django.contrib.gis import admin as gisadmin
+from django.contrib.gis import admin as admin
 
-gisadmin.site.register(Place, gisadmin.GeoModelAdmin)
+admin.site.register(Place, admin.GeoModelAdmin)
 admin.site.register(PlaceToken)
