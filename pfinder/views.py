@@ -8,12 +8,13 @@ def lookupId(request, pid):
     return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
 def lookupKey(request, key):
-    these_objects = Place.objects.filter(placetoken__key = key)
-    return 1
+    dispatch = list(Place.objects.filter(placetoken__key = key).values('id', 'name'))
+    return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
 def lookupToken(request, key, value):
-    these_objects = Place.objects.filter(placetoken__key = key, placetoken__value = value)
-    return 1
+    dispatch = list(Place.objects.filter(
+        placetoken__key = key, placetoken__value = value).values('id', 'name'))
+    return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
 def createNew(request):
     # Incoming json payload
