@@ -32,9 +32,9 @@ def lookupBounds(request):
     xmax, ymin = [float(x) for x in sepoint.split(',')]
     bbox = (xmin, ymin, xmax, ymax)
     these_places = list(Place.objects.filter(
-        mpoint__contained = Polygon.from_bbox(bbox)))
+        location__contained = Polygon.from_bbox(bbox)))
     dispatch = [{'id': this_place.id, 'name': this_place.name,
-                 'x': this_place.mpoint.x, 'y': this_place.mpoint.y}
+                 'x': this_place.location.x, 'y': this_place.location.y}
                 for this_place in these_places]
     return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
@@ -44,19 +44,19 @@ def lookupAround(request):
     if center.find(',') < 0:
         return HttpResponseBadRequest('Malformed center coordinates')
     centerx, centery = [float(x) for x in center.split(',')]
-    these_places = list(Place.objects.filter(mpoint__distance_lt=(
+    these_places = list(Place.objects.filter(location__distance_lt=(
                 Point(centerx, centery), D(m=radius))))
     dispatch = [{'id': this_place.id, 'name': this_place.name,
-                 'x': this_place.mpoint.x, 'y': this_place.mpoint.y}
+                 'x': this_place.location.x, 'y': this_place.location.y}
                 for this_place in these_places]
     return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
 def createNew(request):
     if request.method == 'POST':
         payload = json.loads(request.body)
-        thisx, thisy = payload.get('mpoint', None).split(',')
+        thisx, thisy = payload.get('location', None).split(',')
         pnt = GEOSGeometry('POINT(%s %s)' % (thisx, thisy))
-        this_place = Place(name = payload.get('name', None), mpoint = pnt)
+        this_place = Place(name = payload.get('name', None), location = pnt)
         this_place.save()
         return HttpResponse('Success')
     else:
