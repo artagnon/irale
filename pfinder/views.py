@@ -31,9 +31,11 @@ def lookupBounds(request):
     xmin, ymax = [float(x) for x in nwpoint.split(',')]
     xmax, ymin = [float(x) for x in sepoint.split(',')]
     bbox = (xmin, ymin, xmax, ymax)
-    dispatch = list(Place.objects.filter(
-        mpoint__contained = Polygon.from_bbox(bbox)).values(
-        'id', 'name'))
+    these_places = list(Place.objects.filter(
+        mpoint__contained = Polygon.from_bbox(bbox)))
+    dispatch = [{'id': this_place.id, 'name': this_place.name,
+                 'x': this_place.mpoint.x, 'y': this_place.mpoint.y}
+                for this_place in these_places]
     return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
 def lookupAround(request):
@@ -42,8 +44,11 @@ def lookupAround(request):
     if center.find(',') < 0:
         return HttpResponseBadRequest('Malformed center coordinates')
     centerx, centery = [float(x) for x in center.split(',')]
-    dispatch = list(Place.objects.filter(mpoint__distance_lt=(
-            Point(centerx, centery), D(m=radius))).values('id', 'name'))
+    these_places = list(Place.objects.filter(mpoint__distance_lt=(
+                Point(centerx, centery), D(m=radius))))
+    dispatch = [{'id': this_place.id, 'name': this_place.name,
+                 'x': this_place.mpoint.x, 'y': this_place.mpoint.y}
+                for this_place in these_places]
     return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
 def createNew(request):
