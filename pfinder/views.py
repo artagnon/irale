@@ -1,15 +1,18 @@
 from models import Place, PlaceToken
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.measure import D
 import json
 
 def lookupId(request, pid):
-    this_place = Place.objects.get(id = pid)
-    dispatch = {'name': this_place.name,
-                'tokens': list(PlaceToken.objects.filter(
-                place_id = pid).values('key', 'value'))}
-    return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
+    try:
+        this_place = Place.objects.get(id = pid)
+        dispatch = {'name': this_place.name,
+                    'tokens': list(PlaceToken.objects.filter(
+                    place_id = pid).values('key', 'value'))}
+        return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
+    except:
+        return HttpResponseBadRequest('Place missing')
 
 def lookupKey(request, key):
     dispatch = list(Place.objects.filter(placetoken__key = key).values('id', 'name'))
