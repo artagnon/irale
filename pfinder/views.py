@@ -70,3 +70,18 @@ def editId(request, pid):
         return HttpResponse('Success')
     else:
         return HttpResponseBadRequest('Missing POST data')
+
+def addToken(request, pid):
+    if request.method == 'POST':
+        payload = json.loads(request.body)
+        try:
+            this_place = Place.objects.get(id = pid)
+            this_token = PlaceToken(place = this_place,
+                                    key = payload.get('key', None),
+                                    value = payload.get('value', None))
+            this_token.save()
+            return HttpResponse('Success')
+        except:
+            return HttpResponseBadRequest('Place missing')
+    else:
+        return HttpResponseBadRequest('Missing POST data')

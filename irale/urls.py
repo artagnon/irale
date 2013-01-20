@@ -11,5 +11,6 @@ urlpatterns = patterns('',
     url(r'^around/$', 'pfinder.views.lookupAround'),
     url(r'^new/$', 'pfinder.views.createNew'),
     url(r'^edit/(\d+)/$', 'pfinder.views.editId'),
+    url(r'^attach/(\d+)/$', 'pfinder.views.addToken'),
     url(r'^admin/', include(admin.site.urls)),
 )
