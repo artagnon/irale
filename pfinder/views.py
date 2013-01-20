@@ -32,7 +32,7 @@ def lookupBounds(request):
     xmax, ymin = [float(x) for x in sepoint.split(',')]
     bbox = (xmin, ymin, xmax, ymax)
     dispatch = list(Place.objects.filter(
-        mpoint__bbcontains = Polygon.from_bbox(bbox)).values(
+        mpoint__contained = Polygon.from_bbox(bbox)).values(
         'id', 'name'))
     return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
