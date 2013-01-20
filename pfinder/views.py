@@ -26,6 +26,8 @@ def lookupToken(request, key, value):
 def lookupBounds(request):
     nwpoint = request.GET.get('nw')
     sepoint = request.GET.get('se')
+    if nwpoint.find(',') < 0 or sepoint.find(',') < 0:
+        return HttpResponseBadRequest('Malformed coordinates')
     xmin, ymax = [float(x) for x in nwpoint.split(',')]
     xmax, ymin = [float(x) for x in sepoint.split(',')]
     bbox = (xmin, ymin, xmax, ymax)
@@ -37,6 +39,8 @@ def lookupBounds(request):
 def lookupAround(request):
     center = request.GET.get('center')
     radius = request.GET.get('radius')
+    if center.find(',') < 0:
+        return HttpResponseBadRequest('Malformed center coordinates')
     centerx, centery = [float(x) for x in center.split(',')]
     dispatch = list(Place.objects.filter(mpoint__distance_lt=(
             Point(centerx, centery), D(m=radius))).values('id', 'name'))
