@@ -1,6 +1,6 @@
 from models import Place, PlaceToken
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.geos import Point, Polygon, GEOSGeometry
 from django.contrib.gis.measure import D
 import json
 
@@ -47,9 +47,26 @@ def lookupAround(request):
     return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
 def createNew(request):
-    # Incoming json payload
-    return 1
+    if request.method == 'POST':
+        payload = json.loads(request.body)
+        thisx, thisy = payload.get('mpoint', None).split(',')
+        pnt = GEOSGeometry('POINT(%s %s)' % (thisx, thisy))
+        this_place = Place(name = payload.get('name', None), mpoint = pnt)
+        this_place.save()
+        return HttpResponse('Success')
+    else:
+        return HttpResponseBadRequest('Missing POST data')
 
-def editId(request, id):
-    # Incoming json payload
-    return 1
+def editId(request, pid):
+    if request.method == 'POST':
+        payload = json.loads(request.body)
+        this_place = Place.objects.get(id = pid)
+        this_place.name = payload.get('name', None)
+        this_token = PlaceToken(place = this_place,
+                                key = payload.get('key', None),
+                                value = payload.get('value', None))
+        this_place.save()
+        this_token.save()
+        return HttpResponse('Success')
+    else:
+        return HttpResponseBadRequest('Missing POST data')
