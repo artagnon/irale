@@ -1,5 +1,7 @@
 from models import Place, PlaceToken
 from django.http import HttpResponse
+from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.measure import D
 import json
 
 def lookupId(request, pid):
@@ -16,6 +18,25 @@ def lookupKey(request, key):
 def lookupToken(request, key, value):
     dispatch = list(Place.objects.filter(
         placetoken__key = key, placetoken__value = value).values('id', 'name'))
+    return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
+
+def lookupBounds(request):
+    nwpoint = request.GET.get('nw')
+    sepoint = request.GET.get('se')
+    xmin, ymax = [float(x) for x in nwpoint.split(',')]
+    xmax, ymin = [float(x) for x in sepoint.split(',')]
+    bbox = (xmin, ymin, xmax, ymax)
+    dispatch = list(Place.objects.filter(
+        mpoint__bbcontains = Polygon.from_bbox(bbox)).values(
+        'id', 'name'))
+    return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
+
+def lookupAround(request):
+    center = request.GET.get('center')
+    radius = request.GET.get('radius')
+    centerx, centery = [float(x) for x in center.split(',')]
+    dispatch = list(Place.objects.filter(mpoint__distance_lt=(
+            Point(centerx, centery), D(m=radius))).values('id', 'name'))
     return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
 
 def createNew(request):
