@@ -3,25 +3,38 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.contrib.gis.geos import Point, Polygon, GEOSGeometry
 from django.contrib.gis.measure import D
 import json
+import geojson
+
+def placeToJSONFeature(p):
+    props=dict([(i.key, i.value) for i in
+                (PlaceToken.objects.filter(place=p.id))])
+    props['name'] = p.name
+    feature=geojson.Feature(p.id,
+                            geojson.geometry.Point(p.location.coords),
+                            props)
+    return feature
+
+def placeListToFeatureCollection(placeList):
+    return geojson.feature.FeatureCollection(
+        [placeToJSONFeature(i) for i in placeList])
 
 def lookupId(request, pid):
     try:
         this_place = Place.objects.get(id = pid)
-        dispatch = {'name': this_place.name,
-                    'tokens': list(PlaceToken.objects.filter(
-                    place_id = pid).values('key', 'value'))}
-        return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
-    except:
-        return HttpResponseBadRequest('Place missing')
+        dispatch = placeToJSONFeature(this_place)
+        return HttpResponse(geojson.dumps(dispatch), content_type = 'application/json')
+    except Exception as e:
+
+        return HttpResponseBadRequest('Place missing' + str(e))
 
 def lookupKey(request, key):
-    dispatch = list(Place.objects.filter(placetoken__key = key).values('id', 'name'))
-    return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
+    dispatch = placeListToFeatureCollection(Place.objects.filter(placetoken__key = key))
+    return HttpResponse(geojson.dumps(dispatch), content_type = 'application/json')
 
 def lookupToken(request, key, value):
-    dispatch = list(Place.objects.filter(
-        placetoken__key = key, placetoken__value = value).values('id', 'name'))
-    return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
+    dispatch = placeListToFeatureCollection(
+        Place.objects.filter(placetoken__key = key, placetoken__value = value))
+    return HttpResponse(geojson.dumps(dispatch), content_type = 'application/json')
 
 def lookupBounds(request):
     nwpoint = request.GET.get('nw')
@@ -31,12 +44,9 @@ def lookupBounds(request):
     xmin, ymax = [float(x) for x in nwpoint.split(',')]
     xmax, ymin = [float(x) for x in sepoint.split(',')]
     bbox = (xmin, ymin, xmax, ymax)
-    these_places = list(Place.objects.filter(
-        location__contained = Polygon.from_bbox(bbox)))
-    dispatch = [{'id': this_place.id, 'name': this_place.name,
-                 'x': this_place.location.x, 'y': this_place.location.y}
-                for this_place in these_places]
-    return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
+    dispatch = placeListToFeatureCollection(
+        Place.objects.filter(location__contained = Polygon.from_bbox(bbox)))
+    return HttpResponse(geojson.dumps(dispatch), content_type = 'application/json')
 
 def lookupAround(request):
     center = request.GET.get('center')
@@ -44,12 +54,12 @@ def lookupAround(request):
     if center.find(',') < 0:
         return HttpResponseBadRequest('Malformed center coordinates')
     centerx, centery = [float(x) for x in center.split(',')]
-    these_places = list(Place.objects.filter(location__distance_lt=(
-                Point(centerx, centery), D(m=radius))))
-    dispatch = [{'id': this_place.id, 'name': this_place.name,
-                 'x': this_place.location.x, 'y': this_place.location.y}
-                for this_place in these_places]
-    return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
+
+    dispatch = placeListToFeatureCollection(
+        Place.objects.filter(location__distance_lt=(Point(centerx, centery),
+                                                    D(m=radius))))
+
+    return HttpResponse(geojson.dumps(dispatch), content_type = 'application/json')
 
 def createNew(request):
     if request.method == 'POST':
