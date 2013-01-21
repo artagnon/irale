@@ -11,8 +11,8 @@ def lookupId(request, pid):
                     'tokens': list(PlaceToken.objects.filter(
                     place_id = pid).values('key', 'value'))}
         return HttpResponse(json.dumps(dispatch), content_type = 'application/json')
-    except:
-        return HttpResponseBadRequest('Place missing')
+    except Exception as e:
+        return HttpResponseBadRequest(str(e))
 
 def lookupKey(request, key):
     dispatch = list(Place.objects.filter(placetoken__key = key).values('id', 'name'))
@@ -86,7 +86,7 @@ def addToken(request, pid):
                                     value = payload.get('value', None))
             this_token.save()
             return HttpResponse('Success')
-        except:
-            return HttpResponseBadRequest('Place missing')
+        except Exception as e:
+            return HttpResponseBadRequest(str(e))
     else:
         return HttpResponseBadRequest('Missing POST data')
