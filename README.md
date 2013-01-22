@@ -11,6 +11,7 @@ Minimum expected versions are:
 * postgis 2.0.2
 * django 1.5b2
 * python-psycopg2 2.4.5
+* geojson 1.0.1
 
 On a Debian Sid system,
 
@@ -32,6 +33,9 @@ On a Debian Sid system,
     # Debian repositories only have Django 1.4, so use pip to install
     # it in ~/.local
     $ pip install --user git+git://github.com/django/django.git@1.5b2
+
+    # Get GeoJSON via pip
+    $ pip install --user geojson
 
     # Make sure that your $PATH and $PYTHONPATH are set correctly
     $ export PATH=$PATH:~/.local/bin
