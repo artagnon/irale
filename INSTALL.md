@@ -2,8 +2,8 @@
 
 * postgresql 9.1
 * postgis 2.0.2
-* django 1.5b2
-* python-psycopg2 2.4.5
+* django >= 1.5b2
+* python-psycopg2 >= 2.4.5
 
 On a Debian Sid system,
 
