@@ -5,6 +5,8 @@ GeoDjango.
 
 ## Dependencies
 
+Minimum expected versions are:
+
 * postgresql 9.1
 * postgis 2.0.2
 * django 1.5b2
